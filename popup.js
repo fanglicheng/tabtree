@@ -11,15 +11,22 @@ function addChild(node) {
 
 function remove() {
     console.log('remove')      
-    chrome.tabs.remove(this.tab.id);
-    this.parent.elem.removeChild(this.elem)
+    for (var i in this.children) {
+        this.children[i].remove()
+    }
+    if (this.tab) {
+        chrome.tabs.remove(this.tab.id);
+    }
+    this.parent.children_elem.removeChild(this.elem)
+
+    var i = this.parent.children.indexOf(this)
+    if (i != -1) {
+        console.log('remove ' + i)      
+        this.parent.children.splice(i, 1)
+    }
 }
 
-function hahaha() {
-    console.log('hahaha')      
-}
-
-function node(tab) {
+function Node(tab) {
     this.tab = tab
     this.children = []
     this.addChild = addChild
@@ -47,7 +54,7 @@ function node(tab) {
     // close button
     var xbutton = document.createElement('img')
     xbutton.setAttribute('class', 'xbutton')
-    xbutton.onClick = hahaha
+    xbutton.onclick = remove.bind(this)
     xbutton.src = X_SRC
     cell1.appendChild(xbutton)
 
@@ -91,6 +98,19 @@ byKey = function(key) {
     };
 }
 
+function sortIntoGroups(tabs) {
+    var result = []
+    var group = []
+    for (var i in tabs) { 
+        if (i > 0 && tabs[i].domain != tabs[i-1].domain) {
+            result.push(group)
+            group = []
+        }
+        group.push(tabs[i])
+    }
+    result.push(group)
+    return result
+}
 
 // input: array of tabs
 function show(tabs) {
@@ -111,18 +131,49 @@ function show(tabs) {
     console.log(tabs_pinned_unpinned);
     var tab_section = document.getElementById('tabs');
 
-    var root = new node(null)
+    var root = new Node(null)
+
+    pinned_groups = sortIntoGroups(pinned)
+    for (var i in pinned_groups) {
+        var group = pinned_groups[i]
+        if (group.length > 1) {
+            var node = new Node(null)
+            for (var i in group) {
+                var tab = group[i]
+                node.addChild(new Node(tab))
+            }
+        } else {
+            var node = new Node(group[0])
+        }
+        root.addChild(node)
+    }
+
+    unpinned_groups = sortIntoGroups(unpinned)
+    for (var i in unpinned_groups) {
+        var group = unpinned_groups[i]
+        if (group.length > 1) {
+            var node = new Node(null)
+            for (var i in group) {
+                var tab = group[i]
+                node.addChild(new Node(tab))
+            }
+        } else {
+            var node = new Node(group[0])
+        }
+        root.addChild(node)
+    }
+
+    /*
     for (var i in tabs_pinned_unpinned) {
         var tab = tabs_pinned_unpinned[i];
         console.log(tab);
         console.log('display tab id: ' + tab.id);
 
-        root.addChild(new node(tab))
+        root.addChild(new Node(tab))
         //console.log(tabs[i].title);
         //console.log("id " + tabs[i].id);
         //console.log("parent " + tabs[i].openerTabId);
         //console.log(tabs[i].url);
-        /*
         var xbutton = document.createElement('img');
         xbutton.setAttribute('class', 'xbutton');
         xbutton.src = x_src;
@@ -147,8 +198,8 @@ function show(tabs) {
         tab_section.appendChild(fav);
         tab_section.appendChild(elem);
         tab_section.appendChild(br);
-        */
     }
+    */
     tab_section.appendChild(root.elem)
 }
 
@@ -259,13 +310,13 @@ function DOMContentLoadedListener() {
     var index = document.createElement('button');
     index.id = "index";
     index.innerHTML = "Original";
-    index.onclick = sortByIndex.bind(index);
+    index.onclick = sortByIndex
     button_section.appendChild(index);
 
     var domain = document.createElement('button');
     domain.id = "domain";
     domain.innerHTML = "Domain";
-    domain.onclick = sortByDomain.bind(domain);
+    domain.onclick = sortByDomain
     button_section.appendChild(domain);
 
     sortByIndex();
