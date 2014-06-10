@@ -11,10 +11,11 @@ function addChild(node) {
 
 function remove() {
     console.log('remove')      
+    console.log(this)      
     for (var i in this.children) {
         this.children[i].remove()
     }
-    if (this.tab) {
+    if (!this.domain && this.tab) {
         chrome.tabs.remove(this.tab.id);
     }
     this.parent.children_elem.removeChild(this.elem)
@@ -26,8 +27,9 @@ function remove() {
     }
 }
 
-function Node(tab) {
+function Node(tab, domain) {
     this.tab = tab
+    this.domain = false  // is domain node
     this.children = []
     this.addChild = addChild
     this.remove = remove
@@ -59,10 +61,21 @@ function Node(tab) {
     cell1.appendChild(xbutton)
 
     // fav icon and title for tab node
-    if (this.tab) {
+    if (this.domain) {
         var fav = document.createElement('img')
         fav.src = tab.favIconUrl
         cell1.appendChild(fav)
+
+        var title = document.createElement('span')
+        title.setAttribute('class', 'title')
+        title.innerHTML = tab.domain
+        title.onclick = selecttab.bind(title, tab.id);
+        cell1.appendChild(title)
+    } else if (this.tab) {
+        var fav = document.createElement('img')
+        fav.src = tab.favIconUrl
+        cell1.appendChild(fav)
+
         var title = document.createElement('span')
         title.setAttribute('class', 'title')
         title.innerHTML = tab.title
@@ -99,7 +112,12 @@ byKey = function(key) {
 }
 
 function sortIntoGroups(tabs) {
+    console.log('sort')
     var result = []
+    if (tabs.length == 0) {
+        console.log(result)
+        return result
+    }
     var group = []
     for (var i in tabs) { 
         if (i > 0 && tabs[i].domain != tabs[i-1].domain) {
@@ -109,6 +127,7 @@ function sortIntoGroups(tabs) {
         group.push(tabs[i])
     }
     result.push(group)
+    console.log(result)
     return result
 }
 
@@ -133,32 +152,34 @@ function show(tabs) {
 
     var root = new Node(null)
 
+    console.log('pinned')
+    console.log(pinned)
     pinned_groups = sortIntoGroups(pinned)
     for (var i in pinned_groups) {
         var group = pinned_groups[i]
+        var node = new Node(group[0])
         if (group.length > 1) {
-            var node = new Node(null)
+            node.domain = true
             for (var i in group) {
                 var tab = group[i]
                 node.addChild(new Node(tab))
             }
-        } else {
-            var node = new Node(group[0])
         }
         root.addChild(node)
     }
 
+    console.log('unpinned')
+    console.log(unpinned)
     unpinned_groups = sortIntoGroups(unpinned)
     for (var i in unpinned_groups) {
         var group = unpinned_groups[i]
+        var node = new Node(group[0])
         if (group.length > 1) {
-            var node = new Node(null)
+            node.domain = true
             for (var i in group) {
                 var tab = group[i]
                 node.addChild(new Node(tab))
             }
-        } else {
-            var node = new Node(group[0])
         }
         root.addChild(node)
     }
@@ -201,6 +222,7 @@ function show(tabs) {
     }
     */
     tab_section.appendChild(root.elem)
+    console.log(root)
 }
 
 function selecttab(id) {
@@ -281,29 +303,41 @@ function domainTree() {
   }
 }
 
-function sortByDomain () {
+function sortByDomain(tabs) {
     console.log('sort by domain');
     clear();
-    UI_TABS.sort(byKey(function(x) { return x.domain }));
-    show(UI_TABS);
-    move(UI_TABS);
+    for (var i in tabs) {
+        var tab = tabs[i]
+        console.log(tab)
+        tab.domain = BKG.getDomain(tab.url)
+    }
+    tabs.sort(byKey(function(x) { return x.domain }));
+    show(tabs);
+    move(tabs);
 }
 
-function sortByIndex () {
+function sortByIndex(tabs) {
     console.log('sort by index');
     clear();
-    UI_TABS.sort(byKey(function(x) { return x.old_index }));
-    show(UI_TABS);
-    move(UI_TABS);
+    for (var i in tabs) {
+        var tab = tabs[i]
+        console.log(tab)
+        tab.domain = BKG.getDomain(tab.url)
+    }
+    tabs.sort(byKey(function(x) { return x.index }));
+    show(tabs);
+    move(tabs);
 }
 
 function DOMContentLoadedListener() {
+    /*
     console.log(UI_TABS);
     for (var id in BKG.TABS) {
         var tab = BKG.TABS[id];
         tab.old_index = tab.index;
         UI_TABS.push(tab);
     }
+    */
 
     button_section = document.getElementById('buttons');
 
@@ -319,7 +353,7 @@ function DOMContentLoadedListener() {
     domain.onclick = sortByDomain
     button_section.appendChild(domain);
 
-    sortByIndex();
+    chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT}, sortByIndex)
 }
 
 document.addEventListener('DOMContentLoaded', DOMContentLoadedListener);
