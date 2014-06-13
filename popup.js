@@ -10,15 +10,22 @@ function addChild(node) {
 }
 
 function remove() {
-    console.log('remove')      
+    console.log('call remove')      
     console.log(this)      
-    for (var i in this.children) {
-        this.children[i].remove()
-    }
-    if (!this.domain && this.tab) {
-        chrome.tabs.remove(this.tab.id);
+    // make a copy. this.children will be modified during iteration when
+    // children remove themselves.
+    var children = this.children.slice(0)
+    for (var i in children) {
+        console.log('remove child ' + i)
+        children[i].remove()
     }
     this.parent.children_elem.removeChild(this.elem)
+
+    if (!this.domain && this.tab) {
+        console.log('remove tab')
+        console.log(this.tab)
+        chrome.tabs.remove(this.tab.id);
+    }
 
     var i = this.parent.children.indexOf(this)
     if (i != -1) {
@@ -29,7 +36,7 @@ function remove() {
 
 function Node(tab, domain) {
     this.tab = tab
-    this.domain = false  // is domain node
+    this.domain = domain
     this.children = []
     this.addChild = addChild
     this.remove = remove
@@ -41,6 +48,7 @@ function Node(tab, domain) {
     var row1 = document.createElement('tr')
     this.elem.appendChild(row1)
     var cell1 = document.createElement('td')
+    cell1.setAttribute('class', 'cell1')
     row1.appendChild(cell1)
 
     var row2 = document.createElement('tr')
@@ -58,9 +66,19 @@ function Node(tab, domain) {
     xbutton.setAttribute('class', 'xbutton')
     xbutton.onclick = remove.bind(this)
     xbutton.src = X_SRC
+    xbutton.style.visibility = 'hidden'
+    xbutton.show = function () {
+        xbutton.style.visibility = 'visible'
+    }
+    xbutton.hide = function () {
+        xbutton.style.visibility = 'hidden'
+    }
     cell1.appendChild(xbutton)
+    cell1.onmouseover = xbutton.show
+    cell1.onmouseleave = xbutton.hide
 
     // fav icon and title for tab node
+    console.log(this.domain)
     if (this.domain) {
         var fav = document.createElement('img')
         fav.src = tab.favIconUrl
@@ -69,6 +87,8 @@ function Node(tab, domain) {
         var title = document.createElement('span')
         title.setAttribute('class', 'title')
         title.innerHTML = tab.domain
+        console.log('show domain node')
+        console.log(tab.domain)
         title.onclick = selecttab.bind(title, tab.id);
         cell1.appendChild(title)
     } else if (this.tab) {
@@ -157,13 +177,16 @@ function show(tabs) {
     pinned_groups = sortIntoGroups(pinned)
     for (var i in pinned_groups) {
         var group = pinned_groups[i]
-        var node = new Node(group[0])
+        var node = null;
         if (group.length > 1) {
+            node = new Node(group[0], true)
             node.domain = true
             for (var i in group) {
                 var tab = group[i]
-                node.addChild(new Node(tab))
+                node.addChild(new Node(tab, false))
             }
+        } else {
+            node = new Node(group[0], false)
         }
         root.addChild(node)
     }
@@ -173,13 +196,15 @@ function show(tabs) {
     unpinned_groups = sortIntoGroups(unpinned)
     for (var i in unpinned_groups) {
         var group = unpinned_groups[i]
-        var node = new Node(group[0])
+        var node = null
         if (group.length > 1) {
-            node.domain = true
+            var node = new Node(group[0], true)
             for (var i in group) {
                 var tab = group[i]
-                node.addChild(new Node(tab))
+                node.addChild(new Node(tab), false)
             }
+        } else {
+            var node = new Node(group[0], false)
         }
         root.addChild(node)
     }
@@ -339,6 +364,7 @@ function DOMContentLoadedListener() {
     }
     */
 
+    /*
     button_section = document.getElementById('buttons');
 
     var index = document.createElement('button');
@@ -352,8 +378,9 @@ function DOMContentLoadedListener() {
     domain.innerHTML = "Domain";
     domain.onclick = sortByDomain
     button_section.appendChild(domain);
+    */
 
-    chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT}, sortByIndex)
+    chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT}, sortByDomain)
 }
 
 document.addEventListener('DOMContentLoaded', DOMContentLoadedListener);
