@@ -49,12 +49,13 @@ function Node(tab, domain) {
     this.elem.appendChild(row1)
     var cell1 = document.createElement('td')
     cell1.setAttribute('class', 'cell1')
+    cell1.setAttribute('colspan', '2')
     row1.appendChild(cell1)
 
     var row2 = document.createElement('tr')
     this.elem.appendChild(row2)
     var cell2 = document.createElement('td')
-    cell2.width = '0px'
+    cell2.width = 20
     row2.appendChild(cell2)
     var cell3 = document.createElement('td')
     row2.appendChild(cell3)
