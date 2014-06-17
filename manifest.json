@@ -15,5 +15,13 @@
   },
   "permissions": [
     "tabs"
-  ]
+  ],
+
+  "icons" : {
+    "16" : "tree-icon-16.png",
+    "32" : "tree-icon-32.png",
+    "48" : "tree-icon-48.png",
+    "64" : "tree-icon-64.png",
+    "128" : "tree-icon-128.png"
+  }
 }
