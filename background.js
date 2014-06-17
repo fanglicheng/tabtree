@@ -215,13 +215,13 @@ function initTabs(tabs) {
 
 //chrome.browserAction.onClicked.addListener(closeSelectedTab);
 
-chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT}, initTabs);
+//chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT}, initTabs);
 
-chrome.extension.onRequest.addListener(pinTabListener);
-chrome.tabs.onCreated.addListener(createHandler);
-chrome.tabs.onRemoved.addListener(removeHandler);
-chrome.tabs.onUpdated.addListener(updateHandler);
-chrome.tabs.onMoved.addListener(moveHandler);
+//chrome.extension.onRequest.addListener(pinTabListener);
+//chrome.tabs.onCreated.addListener(createHandler);
+//chrome.tabs.onRemoved.addListener(removeHandler);
+//chrome.tabs.onUpdated.addListener(updateHandler);
+//chrome.tabs.onMoved.addListener(moveHandler);
 //chrome.tabs.onSelectionChanged.addListener(selectionChangeHandler);
 //chrome.tabs.onAttached.addListener(attachHandler);
 //chrome.tabs.onDetached.addListener(detachHandler);
