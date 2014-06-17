@@ -252,7 +252,6 @@ function show(tabs) {
 
     // shrink indent at root level
     root.padding.width = 0
-    root.title.height = 5
     tab_section.appendChild(root.elem)
     console.log(root)
 }

@@ -6,11 +6,11 @@
   "version": "1.0",
 
   "background": {
-    "scripts": ["background.js"]
+    "scripts": []
   },
 
   "browser_action": {
-    "default_icon": "tree-icon.png",
+    "default_icon": "tree-icon-48.png",
     "default_popup": "popup.html"
   },
   "permissions": [
