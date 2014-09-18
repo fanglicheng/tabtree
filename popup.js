@@ -1,7 +1,7 @@
 BKG = chrome.extension.getBackgroundPage();
 UI_TABS = [];
 
-X_SRC = chrome.extension.getURL('x.gif');
+X_SRC = chrome.extension.getURL('x.png');
 
 function addChild(node) {
     node.parent = this
@@ -60,6 +60,8 @@ function Node(tab, domain) {
     var cell3 = document.createElement('td')
     row2.appendChild(cell3)
 
+    this.title = cell1
+    this.padding = cell2
     this.children_elem = cell3
 
     // close button
@@ -247,6 +249,9 @@ function show(tabs) {
         tab_section.appendChild(br);
     }
     */
+
+    // shrink indent at root level
+    root.padding.width = 0
     tab_section.appendChild(root.elem)
     console.log(root)
 }
