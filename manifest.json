@@ -2,8 +2,8 @@
   "manifest_version": 2,
 
   "name": "Tabtree",
-  "description": "Tab tree.",
-  "version": "1.0",
+  "description": "Sort and group your tabs as a tree.",
+  "version": "0.1",
 
   "background": {
     "scripts": ["background.js"]
@@ -14,7 +14,6 @@
     "default_popup": "popup.html"
   },
   "permissions": [
-    "https://secure.flickr.com/",
     "tabs"
   ]
 }
