@@ -342,7 +342,7 @@ function sortByDomain(tabs) {
         console.log(tab)
         tab.domain = BKG.getDomain(tab.url)
     }
-    tabs.sort(byKey(function(x) { return [x.domain, x.url] }));
+    tabs.sort(byKey(function(x) { return [x.domain, x.id] }));
     show(tabs);
     move(tabs);
 }
