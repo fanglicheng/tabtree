@@ -154,23 +154,22 @@ function sortIntoGroups(tabs) {
     return result
 }
 
+// sort by pinned : unpinned
+function divide(tabs) {
+  var pinned = [];
+  var unpinned = [];
+  for (var i in tabs) {
+      var tab = tabs[i];
+      if (tab.pinned)
+          pinned.push(tab);
+      else
+          unpinned.push(tab);
+  }
+  return { pinned : pinned, unpinned, unpinned };
+}
+
 // input: array of tabs
-function show(tabs) {
-    // sort by pinned : unpinned
-    var pinned = [];
-    var unpinned = [];
-    for (var i in tabs) {
-        var tab = tabs[i];
-        if (tab.pinned)
-            pinned.push(tab);
-        else
-            unpinned.push(tab);
-    }
-    // keep pinned tabs fixed
-    pinned.sort(byKey(function(x) { return x.old_index }));
-    tabs_pinned_unpinned = pinned.concat(unpinned);
-    console.log('pinned unpinned sort');
-    console.log(tabs_pinned_unpinned);
+function show(pinned, unpinned) {
     var tab_section = document.getElementById('tabs');
 
     var root = new Node(null)
@@ -296,21 +295,12 @@ function numPinned(tabs) {
     return pinned;
 }
 
-function move(tabs) {
+function move(pinned, unpinned) {
     console.log('move tabs');
-    console.log(tabs);
-    var pinned = numPinned(tabs);
-    var pinned_moved = 0;
-    var unpinned_moved = 0;
-    for (i in tabs) {
-        var tab = tabs[i];
-        if (tab.pinned) {
-            chrome.tabs.move(tab.id, {index: pinned_moved});
-            pinned_moved++;
-        } else {
-            chrome.tabs.move(tab.id, {index: pinned + unpinned_moved});
-            unpinned_moved++;
-        }
+    for (var i = 0; i < unpinned.length; i++) {
+      var tab = unpinned[i];
+      console.log(pinned.length, i);
+      chrome.tabs.move(tab.id, {index: pinned.length + i});
     }
 }
 
@@ -336,15 +326,32 @@ function domainTree() {
 
 function sortByDomain(tabs) {
     console.log('sort by domain');
+    // id used to keep tabs with same domain stable.
+}
+
+function sortUnpinned(tabs) {
+    // clear button menu
     clear();
+    // attach domain
     for (var i in tabs) {
         var tab = tabs[i]
         console.log(tab)
         tab.domain = BKG.getDomain(tab.url)
     }
-    tabs.sort(byKey(function(x) { return [x.domain, x.id] }));
-    show(tabs);
-    move(tabs);
+    // divide into pinned and unpinned
+    var pinned = [];
+    var unpinned = [];
+    for (var i in tabs) {
+        var tab = tabs[i];
+        if (tab.pinned)
+            pinned.push(tab);
+        else
+            unpinned.push(tab);
+    }
+    // sort unpinned tabs by domain
+    unpinned.sort(byKey(function(x) { return [x.domain, x.id] }));
+    show(pinned, unpinned);
+    move(pinned, unpinned);
 }
 
 function sortByIndex(tabs) {
@@ -386,7 +393,7 @@ function DOMContentLoadedListener() {
     button_section.appendChild(domain);
     */
 
-    chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT}, sortByDomain)
+    chrome.tabs.query({windowId: chrome.windows.WINDOW_ID_CURRENT}, sortUnpinned)
 }
 
 document.addEventListener('DOMContentLoaded', DOMContentLoadedListener);

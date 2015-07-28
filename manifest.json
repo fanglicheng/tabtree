@@ -3,7 +3,7 @@
 
   "name": "Tabtree",
   "description": "Sort your tabs and show them as a tree.",
-  "version": "1.0",
+  "version": "1.1",
 
   "background": {
     "scripts": ["background.js"]
