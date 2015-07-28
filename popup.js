@@ -34,6 +34,17 @@ function remove() {
     }
 }
 
+/*
+ *  HTML structure of a tree node:
+ *
+ *  -----------------------------------------------------
+ *                         title
+ *  -----------------------------------------------------
+ *        padding    |           children_elem
+ *  -----------------------------------------------------
+ *
+ */
+
 function Node(tab, domain) {
     this.tab = tab
     this.domain = domain
@@ -43,7 +54,6 @@ function Node(tab, domain) {
 
     this.elem = document.createElement('table')
     this.elem.setAttribute('class', 'node')
-  
     // table structure
     var row1 = document.createElement('tr')
     this.elem.appendChild(row1)
@@ -168,7 +178,6 @@ function divide(tabs) {
   return { pinned : pinned, unpinned, unpinned };
 }
 
-// input: array of tabs
 function show(pinned, unpinned) {
     var tab_section = document.getElementById('tabs');
 
@@ -192,6 +201,9 @@ function show(pinned, unpinned) {
         }
         root.addChild(node)
     }
+
+    var hr = document.createElement('hr');
+    root.children_elem.appendChild(hr);
 
     console.log('unpinned')
     console.log(unpinned)
